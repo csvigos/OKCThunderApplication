@@ -1,0 +1,126 @@
+import math
+import csv
+
+shotData = open('shots_data.csv')
+shotDataDist = open('shotDataDist.csv','w')
+headers = shotData.readline().split(',')
+
+print(f"{headers[0]},{headers[1]},{headers[2]},dist,shotType,{headers[-1]}",file=shotDataDist)
+
+#goes through shot_data.csv
+
+for row in shotData:
+    row = row[:-1]
+    fields = row.split(',')
+    x = abs(float(fields[1]))
+    y = abs(float(fields[2]))
+    dist = math.hypot(x,y)
+    
+
+    # shotType is a nominal variable where 1 = two point shot, 2 = corner three, 3 = field three
+
+    # we set 
+    if dist <= 23.75:
+        shotType = 1
+    elif dist > 23.75:
+        shotType = 3
+    if x > 22 and y < 7.8:
+        shotType = 2
+    print(f"{fields[0]},{fields[1]},{fields[2]},{dist},{shotType},{fields[-1]}",file=shotDataDist)
+
+shotDataDist.close()
+shotData.close()
+
+#creating shot variables
+
+total_shots = 0
+
+two_ptrs_attempted_teamA = 0
+two_ptrs_attempted_teamB = 0
+two_ptrs_made_teamA = 0
+two_ptrs_made_teamB = 0
+
+
+corner_threes_attempted_teamA = 0
+corner_threes_attempted_teamB = 0
+corner_threes_made_teamA = 0
+corner_threes_made_teamB = 0
+
+field_threes_attempted_teamA = 0
+field_threes_attempted_teamB = 0
+field_threes_made_teamA = 0
+field_threes_made_teamB = 0
+
+#Going through csv deciding each shot type and if they were made or missed
+
+with open('shotDataDist.csv', newline='') as shotData:
+    reader = csv.DictReader(shotData)
+    for row in reader:
+        if row['shotType'] == '1':
+            if(row['team'] == 'Team A'):
+                two_ptrs_attempted_teamA += 1
+                two_ptrs_made_teamA += int(row['fgmade'])
+            else:
+                two_ptrs_attempted_teamB += 1
+                two_ptrs_made_teamB += int(row['fgmade'])
+        if row['shotType'] == '2':
+            if(row['team'] == 'Team A'):
+                corner_threes_attempted_teamA += 1
+                corner_threes_made_teamA += int(row['fgmade'])
+            else:
+                corner_threes_attempted_teamB += 1
+                corner_threes_made_teamB += int(row['fgmade'])
+        if row['shotType'] == '3':
+            if(row['team'] == 'Team A'):
+                field_threes_attempted_teamA += 1
+                field_threes_made_teamA += int(row['fgmade'])
+            else:
+                field_threes_attempted_teamB += 1
+                field_threes_made_teamB += int(row['fgmade'])
+
+
+
+#finding total shots for each team
+
+
+total_shots_teamA = two_ptrs_attempted_teamA + corner_threes_attempted_teamA + field_threes_attempted_teamA
+total_shots_teamB = two_ptrs_attempted_teamB + corner_threes_attempted_teamB + field_threes_attempted_teamB
+
+
+#finding efc and cumulative of 2 pointers for each team
+
+
+zone1_efg_teamA = two_ptrs_made_teamA/two_ptrs_attempted_teamA
+zone1_cum_pct_teamA = two_ptrs_attempted_teamA/total_shots_teamA
+
+zone1_efg_teamB = two_ptrs_made_teamB/two_ptrs_attempted_teamB
+zone1_cum_pct_teamB = two_ptrs_attempted_teamB/total_shots_teamB
+
+
+#finding efc and cumulative of corner 3s for each team
+
+
+zone2_efg_teamA = (corner_threes_made_teamA + 0.5*corner_threes_made_teamA)/corner_threes_attempted_teamA
+zone2_cum_pct_teamA = corner_threes_attempted_teamA/total_shots_teamA
+
+zone2_efg_teamB = (corner_threes_made_teamB + 0.5*corner_threes_made_teamB)/corner_threes_attempted_teamB
+zone2_cum_pct_teamB = corner_threes_attempted_teamB/total_shots_teamB
+
+
+#finding efc and cumulative of regular 3s for each team
+
+
+zone3_efg_teamA = (field_threes_made_teamA + 0.5 * field_threes_made_teamA)/field_threes_attempted_teamA
+zone3_cum_pct_teamA = field_threes_attempted_teamA/total_shots_teamA
+
+zone3_efg_teamB = (field_threes_made_teamB + 0.5 * field_threes_made_teamB)/field_threes_attempted_teamB
+zone3_cum_pct_teamB = field_threes_attempted_teamB/total_shots_teamB
+
+
+#printing the results for each team by percentage NOT decimal
+
+
+print(f"zone 1 Team A\n efg: {100*zone1_efg_teamA}%  pct total shots Team A: {100*zone1_cum_pct_teamA}%\nzone 2\n efg: {100*zone2_efg_teamA}%  pct total shots: {100*zone2_cum_pct_teamA}%\nzone 3\n efg: {100*zone3_efg_teamA}%  pct total shots: {100*zone3_cum_pct_teamA}%")
+print()
+print(f"zone 1 Team B\n efg: {100*zone1_efg_teamB}%  pct total shots Team A: {100*zone1_cum_pct_teamB}%\nzone 2\n efg: {100*zone2_efg_teamB}%  pct total shots: {100*zone2_cum_pct_teamB}%\nzone 3\n efg: {100*zone3_efg_teamB}%  pct total shots: {100*zone3_cum_pct_teamB}%")
+
